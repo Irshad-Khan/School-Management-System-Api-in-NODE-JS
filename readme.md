@@ -308,8 +308,8 @@ const AcademicTerm = mongoose.model('AcademicTerm', academicTermModel);
 module.exports = AcademicTerm;
 ```
 
-# Lecture 9: Creating AcademicYear Model
-In this lecture we will add logic for academic Year model. Lets craete file AcademicYear.js in model/Academic folder and add below code.
+# Lecture 9: Creating YearGroup Model
+In this lecture we will add logic for yearGroup model. Lets craete file YearGroup.js in model/Academic folder and add below code.
 
 ```bash
 const mongoose = require('mongoose');
