@@ -309,7 +309,7 @@ module.exports = AcademicTerm;
 ```
 
 # Lecture 9: Creating YearGroup Model
-In this lecture we will add logic for yearGroup model. Lets craete file YearGroup.js in model/Academic folder and add below code.
+In this lecture we will add logic for yearGroup model. Lets create file YearGroup.js in model/Academic folder and add below code.
 
 ```bash
 const mongoose = require('mongoose');
