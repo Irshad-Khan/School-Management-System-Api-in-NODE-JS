@@ -1497,3 +1497,116 @@ exports.adminLogin = async(req, res) => {
     }
 }
 ```
+
+# Lecture 24: AUses of Middleware
+Middleware is use to access REQUEST and Response object. There are many USES of MIDDLEWARE.
+
+- Use in AUthorization
+- For Logging
+- For Error Handling
+- For Rate Limiting
+- Data Validation
+- Any Bussiness logic
+
+# Lecture 24: Error Handling
+We use package for async error handling run below command.
+```bash
+npm i express-async-handler
+```
+now any asyn function you rape inside asyncHanlder function. by using this no need to use trycatch
+```bash
+exports.adminRegister = AsynHandler(async(req, res) => {
+
+    const { name, email, password } = req.body
+        //Found Admin
+    const adminFound = await Admin.findOne({ email });
+    if (adminFound) {
+        throw new Error('Admin Exist')
+    } else {
+        const admin = await Admin.create({ name, email, password });
+        res.status(201).json({
+            'status': 'success',
+            'data': admin
+        });
+    }
+});
+```
+# Leacture 25: Global Custom Error Handler
+For this we use error middleware in app.js file after our routes.
+```bash
+app.use((err, req, res, next) => {
+    const stack = err.stack;
+    const message = err.message;
+    const status = err.status ? err.status : 'Faild';
+    const statusCode = err.statusCode ? err.statusCode : 500;
+
+    res.status(statusCode).json({ status, message, stack })
+
+});
+```
+
+## 25.1 : Refector Custom Error Handler
+We need to create new file in middleware folder named globalErrorHandler and add below code.
+```bash
+const globalErrorHandler = (err, req, res, next) => {
+    const stack = err.stack;
+    const message = err.message;
+    const status = err.status ? err.status : 'Faild';
+    const statusCode = err.statusCode ? err.statusCode : 500;
+
+    res.status(statusCode).json({ status, message, stack })
+
+}
+
+module.exports = globalErrorHandler;
+```
+
+Register in app.js
+```bash
+app.use(globalErrorHandler);
+```
+
+# Lecture 26 : Route Not Found Error
+We need to update global handler file as
+```bash
+const globalErrorHandler = (err, req, res, next) => {
+    const stack = err.stack;
+    const message = err.message;
+    const status = err.status ? err.status : 'Faild';
+    const statusCode = err.statusCode ? err.statusCode : 500;
+
+    res.status(statusCode).json({ status, message, stack })
+
+}
+
+const notFoundError = (req, res, next) => {
+    const error = new Error(`Can't find ${req.originalUrl} on the server`);
+    next(error); // This is pass a message to next middleware.
+}
+
+module.exports = { globalErrorHandler, notFoundError };
+```
+
+and also update app.js
+```bash
+const express = require('express');
+const morgon = require('morgan');
+const adminRouter = require('../routes/Staff/AdminRouter');
+const { globalErrorHandler, notFoundError } = require('../middlewares/globalErrorHandler');
+
+const app = express();
+
+//Middlewares
+app.use(morgon('dev'));
+app.use(express.json());
+
+//Routes
+app.use("/api/v1/admins", adminRouter);
+
+//Custom Error Handler
+app.use(notFoundError);
+app.use(globalErrorHandler);
+
+
+module.exports = app;
+```
