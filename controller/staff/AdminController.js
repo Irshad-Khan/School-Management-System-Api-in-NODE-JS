@@ -6,20 +6,14 @@ const generateToken = require('../../utils/generateToken');
 //@desc Get All Admin
 //@route GET /api/v1/admins
 //@access private
-exports.index = (req, res) => {
+exports.index = AsynHandler(async(req, res) => {
+    const admins = await Admin.find({});
+    res.status(201).json({
+        'status': 'success',
+        'data': admins
+    });
 
-    try {
-        res.status(201).json({
-            'status': 'success',
-            'data': 'ALl Admin'
-        });
-    } catch (error) {
-        res.json({
-            'status': 'faild',
-            'error': error.message
-        });
-    }
-};
+})
 
 //@desc Register Admin
 //@route POST /api/v1/admins/register
@@ -66,15 +60,21 @@ exports.adminLogin = AsynHandler(async(req, res) => {
     }
 })
 
-//@desc Get Single Admin
+//@desc Get Admin Profile
 //@route GET /api/v1/admins/:id
 //@access private
-exports.getSingleAdmin = AsynHandler((req, res) => {
+exports.getAdminProfile = AsynHandler(async(req, res) => {
     console.log(req.userAuth);
-    res.status(201).json({
-        'status': 'success',
-        'data': 'Single Admin.'
-    });
+    const admin = await Admin.findById(req.userAuth._id);
+    if (!admin) {
+        throw new Error('Admin not Found')
+    } else {
+        res.status(201).json({
+            'status': 'success',
+            'data': admin
+        });
+    }
+
 });
 
 //@desc Update Admin
@@ -97,19 +97,20 @@ exports.update = (req, res) => {
 //@desc DELETE Admin
 //@route DELETE /api/v1/admins/:id
 //@access private
-exports.deleteAdmin = (req, res) => {
-    try {
-        res.status(201).json({
+exports.deleteAdmin = AsynHandler(async(req, res) => {
+    const id = req.params.id
+    const admin = await Admin.findById(id);
+    if (!admin) {
+        throw new Error('Admin not found')
+    } else {
+        // admin.deleteOne(id);
+        res.status(200).json({
             'status': 'success',
-            'data': 'Delete Admins.'
-        });
-    } catch (error) {
-        res.json({
-            'status': 'faild',
-            'error': error.message
+            'data': admin,
+            'message': 'Admin deleted successfuly'
         });
     }
-};
+});
 
 //@desc Admin Suspended Teacher
 //@route PUT /api/v1/admins/suspended/teacher/:id

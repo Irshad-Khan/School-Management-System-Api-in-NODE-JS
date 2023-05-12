@@ -2,7 +2,7 @@ const express = require('express');
 const {
     adminRegister,
     adminLogin,
-    getSingleAdmin,
+    getAdminProfile,
     index,
     update,
     deleteAdmin,
@@ -30,12 +30,12 @@ adminRouter.post('/login', adminLogin);
 /**
  * Get Single admin
  */
-adminRouter.get('/:id', isLogin, getSingleAdmin);
+adminRouter.get('/profile', isLogin, getAdminProfile);
 
 /**
  * Get All admins
  */
-adminRouter.get('/', index);
+adminRouter.get('/', isLogin, index);
 
 /**
  * Admin Update
