@@ -1,5 +1,6 @@
 const AsynHandler = require('express-async-handler')
-const Admin = require('../../model/Staff/Admin')
+const Admin = require('../../model/Staff/Admin');
+const generateToken = require('../../utils/generateToken');
 
 
 //@desc Get All Admin
@@ -42,55 +43,39 @@ exports.adminRegister = AsynHandler(async(req, res) => {
 //@desc Login Admin
 //@route POST /api/v1/admins
 //@access private
-exports.adminLogin = async(req, res) => {
+exports.adminLogin = AsynHandler(async(req, res) => {
     const { email, password } = req.body;
-    try {
-
-        const admin = await Admin.findOne({ email });
-        if (!admin) {
-            return res.json({
-                'status': 'failed',
-                'data': 'Inivilid credential'
-            });
-        }
-
-        // console.log();
-
-        if (admin && (await admin.verifyPassword(password))) {
-            return res.json({
-                'status': 'success',
-                'data': admin
-            });
-        } else {
-            return res.json({
-                'status': 'failed',
-                'data': 'Inivilid credential'
-            });
-        }
-    } catch (error) {
-        res.json({
-            'status': 'faild',
-            'error': error.message
+    const admin = await Admin.findOne({ email });
+    if (!admin) {
+        return res.json({
+            'status': 'failed',
+            'data': 'Inivilid credential'
         });
     }
-}
+    if (admin && (await admin.verifyPassword(password))) {
+        return res.json({
+            'status': 'success',
+            'user': admin,
+            'token': generateToken(admin._id)
+        });
+    } else {
+        return res.json({
+            'status': 'failed',
+            'data': 'Inivilid credential'
+        });
+    }
+})
 
 //@desc Get Single Admin
 //@route GET /api/v1/admins/:id
 //@access private
-exports.getSingleAdmin = (req, res) => {
-    try {
-        res.status(201).json({
-            'status': 'success',
-            'data': 'Single Admin.'
-        });
-    } catch (error) {
-        res.json({
-            'status': 'faild',
-            'error': error.message
-        });
-    }
-};
+exports.getSingleAdmin = AsynHandler((req, res) => {
+    console.log(req.userAuth);
+    res.status(201).json({
+        'status': 'success',
+        'data': 'Single Admin.'
+    });
+});
 
 //@desc Update Admin
 //@route PUT /api/v1/admins/:id
