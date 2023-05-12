@@ -1610,3 +1610,97 @@ app.use(globalErrorHandler);
 
 module.exports = app;
 ```
+
+# Lecture 27 : Create isLogin Middleware
+In this lecture we are going to create new file in middleware folder named: isLogin.js
+```bash
+const Admin = require('../model/Staff/Admin');
+const verifyToken = require('../utils/verifyToken')
+
+const isLogin = async(req, res, next) => {
+    const headers = req.headers;
+    const token = headers.authorization.split(" ")[1];
+    const verifiedToken = verifyToken(token);
+    if (verifiedToken) {
+        const user = await Admin.findById(verifiedToken.id).select("name email role")
+        req.userAuth = user;
+        next();
+    } else {
+        const err = new Error('Token expired/inivilid');
+        next(err);
+    }
+}
+
+module.exports = isLogin;
+```
+Now we can access login user using req.userAuth object in any function
+
+Now we need to add this middleware in route we need to protect.
+We pass second argument as a middleware
+```bash
+adminRouter.get('/:id', isLogin, getSingleAdmin);
+```
+
+# Lecture 28 : User Authentication using Json Web Token
+First install json web token using below command
+```bash
+npm i jsonwebtoken
+```
+Now in utils folder create file generateToken.js
+```bash
+const jwt = require('jsonwebtoken');
+
+const generateToken = id => {
+    return jwt.sign({ id }, 'anykey', { expiresIn: "5d" });
+}
+
+module.exports = generateToken;
+```
+Now we have to update login method in AdminController
+```bash
+//@desc Login Admin
+//@route POST /api/v1/admins
+//@access private
+exports.adminLogin = AsynHandler(async(req, res) => {
+    const { email, password } = req.body;
+    const admin = await Admin.findOne({ email });
+    if (!admin) {
+        return res.json({
+            'status': 'failed',
+            'data': 'Inivilid credential'
+        });
+    }
+    if (admin && (await admin.verifyPassword(password))) {
+        return res.json({
+            'status': 'success',
+            'user': admin,
+            'token': generateToken(admin._id)
+        });
+    } else {
+        return res.json({
+            'status': 'failed',
+            'data': 'Inivilid credential'
+        });
+    }
+})
+```
+
+# Lecture 29 : Verify JWT
+we need to create new file in utils folder named verifyToken.js
+```bash
+const jwt = require('jsonwebtoken')
+
+const verifyToken = token => {
+    return jwt.verify(token, 'anykey', (err, decoded) => {
+        if (err) {
+            return {
+                message: "Inivilid Token"
+            }
+        } else {
+            return decoded;
+        }
+    });
+}
+
+module.exports = verifyToken;
+```
